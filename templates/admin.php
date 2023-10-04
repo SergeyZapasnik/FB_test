@@ -7,13 +7,15 @@ include 'header.php';
 
 <!-- List of saved currency rates -->
 <h2>Saved Currency Rates</h2>
+<h3><?= (new DateTime($exchangeRates['date']))->format("Y-m-d") ; ?></h3>
+<h3>Base currence <?= $exchangeRates['base_currency']; ?></h3>
 <ul>
-    <li>USD to EUR: 0.85</li>
-    <li>USD to GBP: 0.72</li>
-    <!-- Add more currency rates here -->
+    <?php foreach (json_decode($exchangeRates['rates'], true) as $currency => $rate): ?>
+        <li><?= $currency; ?> - <?= $rate; ?></li>
+    <?php endforeach; ?>
 </ul>
 
 <!-- Link to the conversion page -->
-<a href="conversion.php">Currency Conversion</a>
+<a href="/">Currency Conversion</a>
 
 <?php include 'footer.php'; ?>
