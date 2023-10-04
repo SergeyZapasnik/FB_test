@@ -1,19 +1,16 @@
 <?php
 
-require_once 'vendor/autoload.php';
+require_once '../vendor/autoload.php';
 
 use App\Controllers\AuthController;
 use App\Controllers\CurrencyController;
 use App\Controllers\AdminController;
+use Containers\Container;
 
 $routes = [
     '/' => [CurrencyController::class, 'conversion'], // Root route for currency conversion
-    '/update-currencies' => [CurrencyController::class, 'updateCurrencies'], // Update currency rates route
-    '/login' => [AuthController::class, 'login'], // Login page route
-    '/process-login' => [AuthController::class, 'processLogin'], // Login form processing route
-    '/logout' => [AuthController::class, 'logout'], // Logout route
+    '/convert' => [CurrencyController::class, 'convert'], // Root route for currency conversion
     '/admin' => [AdminController::class, 'index'], // Admin panel route
-    '/admin/conversion' => [AdminController::class, 'conversion'], // Admin conversion page route
 ];
 
 // Get the current URL request
@@ -24,9 +21,15 @@ if (array_key_exists($currentUrl, $routes)) {
     // Get the controller and method information for handling the route
     list($controllerName, $method) = $routes[$currentUrl];
 
-    // Create an instance of the controller and call the method
-    $controllerInstance = new $controllerName();
-    $controllerInstance->$method();
+    try {
+        // Create an instance of the controller
+        $controller = (new Container())->get($controllerName);
+        // Call the specified method on the controller instance
+        $controller->$method();
+    } catch (ReflectionException $e) {
+        //TODO Exception Handling
+        echo 'Error: ' . $e->getMessage();
+    }
 } else {
     echo '404 - Page Not Found';
 }

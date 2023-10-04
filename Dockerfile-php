@@ -1,0 +1,62 @@
+# Use the official PHP 8.2 image with Apache as the web server
+FROM php:8.2-apache
+
+ENV XDEBUG_MODE="debug,coverage"
+# Versions
+ARG XDEBUG_VERSION=3.2.2
+# Install system dependencies
+RUN apt-get update -y && apt-get upgrade -y && apt-get install -y \
+    git \
+    curl \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    libzip-dev \
+    zip \
+    unzip \
+    libpq-dev
+# Clear cache
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+# Setup PHPXDebug
+RUN pecl install xdebug-${XDEBUG_VERSION} && docker-php-ext-enable xdebug
+# Install PHP extensions
+RUN docker-php-ext-install mysqli pdo pdo_mysql pdo_pgsql mbstring exif pcntl bcmath gd opcache zip \
+    && docker-php-ext-enable mysqli pdo pdo_mysql pdo_pgsql mbstring exif pcntl bcmath gd xdebug
+
+
+
+# Copy your application files into the container
+COPY . /var/www/html
+#FROM httpd:latest
+COPY ./httpd.conf /usr/local/apache2/conf/httpd.conf
+
+COPY ./docker/php/conf.d/xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+COPY ./docker/php/conf.d/error_reporting.ini /usr/local/etc/php/conf.d/error_reporting.ini
+
+# Set permissions on the document root
+#RUN chown -R www-data:www-data /var/www/html
+RUN chmod -R 755 /var/www/html
+
+# Install Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+COPY composer.json composer.lock /var/www/html/
+RUN composer install
+
+# Configure Apache
+RUN a2enmod rewrite
+
+# Add cron job schedule to the crontab
+RUN echo "0 0 * * * /usr/bin/php /var/www/html/scripts/cron_currency_updater.php" > /etc/cron.d/currency_updater
+# Give execution rights on the cron job
+RUN chmod 0644 /etc/cron.d/currency_updater
+# Apply the cron job
+RUN crontab /etc/cron.d/currency_updater
+
+
+# Expose the port used by Apache
+EXPOSE 80
+
+# Command to start Apache within the container
+CMD ["apache2-foreground"]
+# Run the cron service in the background when the container starts
+CMD ["cron", "-f"]

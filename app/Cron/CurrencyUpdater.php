@@ -9,7 +9,7 @@ use App\Services\ExchangeRatesApi;
 class CurrencyUpdater
 {
     public function __construct(
-        private ExchangeRatesRepository $currencyRepository,
+        private ExchangeRatesRepository $exchangeRatesRepository,
         private ExchangeRatesApi $exchangeRatesApi
     )
     {}
@@ -23,7 +23,7 @@ class CurrencyUpdater
         try {
             $exchangeRatsStd = $this->exchangeRatesApi->getExchangeRates();
 
-            $this->currencyRepository->insertOrUpdateExchangeRates($exchangeRatsStd);
+            $this->exchangeRatesRepository->insertOrUpdateExchangeRates($exchangeRatsStd);
 
             // Add success logging here
             // logSuccess('Currency rates updated successfully');
