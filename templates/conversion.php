@@ -27,6 +27,8 @@ include 'header.php';
 </form>
 
 <div id="result"></div>
+<!-- Link to the admin page -->
+<a href="/admin">Admin page</a>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {

@@ -48,9 +48,11 @@ RUN a2enmod rewrite
 # Add cron job schedule to the crontab
 RUN echo "0 0 * * * /usr/bin/php /var/www/html/scripts/cron_currency_updater.php" > /etc/cron.d/currency_updater
 # Give execution rights on the cron job
-RUN chmod 0644 /etc/cron.d/currency_updater
+#RUN chmod 0644 /etc/cron.d/currency_updater
 # Apply the cron job
-RUN crontab /etc/cron.d/currency_updater
+#RUN crontab /etc/cron.d/currency_updater
+# Run the cron service in the background when the container starts
+#CMD ["cron", "-f"]
 
 
 # Expose the port used by Apache
@@ -58,5 +60,3 @@ EXPOSE 80
 
 # Command to start Apache within the container
 CMD ["apache2-foreground"]
-# Run the cron service in the background when the container starts
-CMD ["cron", "-f"]
